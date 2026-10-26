@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aesthetic Romantic Scrapbook</title>
+  
+  <!-- Cursive / Handwritten Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Dancing+Script:wght@700&family=Great+Vibes&family=Sacramento&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #1e1223;
+      font-family: 'Caveat', cursive;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Outer Book Container */
+    .book-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 780px;
+      perspective: 1500px;
+    }
+
+    /* Pages Stack */
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backface-visibility: hidden;
+      transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.6s ease;
+      transform-origin: left center;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .page.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: rotateY(0deg);
+      z-index: 10;
+    }
+
+    .page.flipped {
+      transform: rotateY(-180deg);
+      opacity: 0;
+      z-index: 1;
+    }
+
+    /* Page Navigation Bar */
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 10px 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn {
+      background: #e2b0ff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-family: 'Caveat', cursive;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #311142;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      background: #ffffff;
+      transform: translateY(-2deg);
+    }
+
+    .page-num {
+      color: #f3e8ff;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* Photo Frame Component */
+    .photo-slot {
+      position: relative;
+      background: #ffffff;
+      padding: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .photo-slot:hover {
+      transform: scale(1.03) rotate(0deg) !important;
+      z-index: 20 !important;
+    }
+
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 2px;
+    }
+
+    .photo-slot input[type="file"] {
+      display: none;
+    }
+
+    .photo-slot .upload-hint {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      text-align: center;
+      padding: 8px;
+    }
+
+    .photo-slot:hover .upload-hint {
+      opacity: 1;
+    }
+
+    /* Handwritten Cursive Text Lines */
+    .text-box {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(4px);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .cursive-line {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.35rem;
+      color: #2c1838;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .cursive-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Theme 1: Warm Gold & Cream (Screenshot 1) */
+    .theme-1 {
+      background: #fbf4e2;
+      background-image: radial-gradient(#e2d3b1 1px, transparent 1px);
+      background-size: 16px 16px;
+      border: 8px solid #f2e1b8;
+    }
+
+    /* Theme 2: Vintage Blue & Silver Frames (Screenshot 2) */
+    .theme-2 {
+      background: #dce7f0;
+      background-image: linear-gradient(135deg, #eaf2f8 25%, transparent 25%), linear-gradient(225deg, #eaf2f8 25%, transparent 25%);
+      background-size: 30px 30px;
+    }
+    .theme-2 .photo-slot {
+      border: 8px solid #7a9cb5;
+      border-image: linear-gradient(to bottom right, #a1c4fd, #c2e9fb) 1;
+    }
+
+    /* Theme 3: Deep Purple Aesthetic (Screenshot 3) */
+    .theme-3 {
+      background: #2b1836;
+      color: #ebd3ff;
+    }
+    .theme-3 .text-box {
+      background: rgba(62, 33, 80, 0.85);
+    }
+    .theme-3 .cursive-line {
+      color: #f3d5ff;
+    }
+
+    /* Theme 4: Soft Lavender Floral (Screenshot 4) */
+    .theme-4 {
+      background: #e2d7e8;
+      border: 2px dashed #a282b8;
+    }
+
+    /* Generic Decorator Stickers */
+    .sticker {
+      position: absolute;
+      pointer-events: none;
+      font-size: 1.8rem;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+    }
+  </style>
+</head>
+<body>
+
+  <div class="book-wrapper" id="scrapbook">
+    
+    <!-- PAGE 1: Warm Gold & Cream -->
+    <div class="page theme-1 active" data-page="1">
+      <div style="text-align: center; font-family: 'Great Vibes', cursive; font-size: 2.8rem; color: #5a3d28;">
+        ✨ Happy Birthday ✨
+      </div>
+
+      <div class="photo-slot" style="height: 230px; transform: rotate(-3deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=1" alt="Memory Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+
+      <div class="text-box">
+        <div class="cursive-line">Another year around the sun! ☀️</div>
+        <div class="cursive-line">May your hair stay full, and your heart stay warm.</div>
+        <div class="cursive-line">Here is to making endless beautiful memories together! 💕</div>
+      </div>
+
+      <div class="photo-slot" style="height: 200px; transform: rotate(4deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=2" alt="Memory Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <span class="sticker" style="top: 15px; right: 20px;">🎀</span>
+      <span class="sticker" style="bottom: 20px; left: 15px;">💖</span>
+    </div>
+
+    <!-- PAGE 2: Vintage Blue & Butterfly Frame -->
+    <div class="page theme-2" data-page="2">
+      <div style="font-family: 'Sacramento', cursive; font-size: 2.6rem; color: #1b3b5a; text-align: center;">
+        happiest birthday dear 🦋
+      </div>
+
+      <div class="photo-slot" style="height: 200px; transform: rotate(2deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=3" alt="Cute Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+
+      <div class="text-box" style="background: rgba(255,255,255,0.85);">
+        <div class="cursive-line">Hope your day is full of fun and cute smiles. 😊</div>
+        <div class="cursive-line">I am so lucky to have you as part of my life.</div>
+        <div class="cursive-line">You mean everything to me. Stay shining bright! ✨</div>
+      </div>
+
+      <div class="photo-slot" style="height: 200px; transform: rotate(-4deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=4" alt="Cute Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <span class="sticker" style="top: 100px; right: 10px;">🦋</span>
+      <span class="sticker" style="bottom: 120px; left: 10px;">🌸</span>
+    </div>
+
+    <!-- PAGE 3: Deep Purple Aesthetic -->
+    <div class="page theme-3" data-page="3">
+      <div style="font-family: 'Great Vibes', cursive; font-size: 2.8rem; color: #dcb3ff; text-align: center;">
+        Birthday Girl 💜
+      </div>
+
+      <div class="photo-slot" style="height: 260px; transform: rotate(-2deg); background: #3b1e4c;" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=5" alt="Purple Theme Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+
+      <div class="text-box">
+        <div class="cursive-line">✨ Reminder: You are loved.</div>
+        <div class="cursive-line">✨ You are worthy & you are enough.</div>
+        <div class="cursive-line">✨ Today is all about celebrating YOU! 🎉</div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <div class="photo-slot" style="flex: 1; height: 140px; transform: rotate(3deg);" onclick="triggerUpload(this)">
+          <img src="https://picsum.photos/400/300?random=6" alt="Mini Pic">
+          <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+          <div class="upload-hint">📷 Add</div>
+        </div>
+        <div class="photo-slot" style="flex: 1; height: 140px; transform: rotate(-3deg);" onclick="triggerUpload(this)">
+          <img src="https://picsum.photos/400/300?random=7" alt="Mini Pic">
+          <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+          <div class="upload-hint">📷 Add</div>
+        </div>
+      </div>
+      <span class="sticker" style="top: 15px; left: 15px;">🕯️</span>
+      <span class="sticker" style="bottom: 15px; right: 15px;">🔮</span>
+    </div>
+
+    <!-- PAGE 4: Soft Lavender Floral -->
+    <div class="page theme-4" data-page="4">
+      <div style="font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: #4a2e5d; text-align: center;">
+        Forever & Always 🌿
+      </div>
+
+      <div class="photo-slot" style="height: 220px; transform: rotate(3deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=8" alt="Floral Scrapbook">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+
+      <div class="text-box" style="background: rgba(255,255,255,0.9);">
+        <div class="cursive-line">Another year of you is something worth celebrating. 🌸</div>
+        <div class="cursive-line">May your path be filled with blooming flowers and endless joy.</div>
+      </div>
+
+      <div class="photo-slot" style="height: 220px; transform: rotate(-2deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=9" alt="Floral Scrapbook">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <span class="sticker" style="top: 20px; right: 20px;">💐</span>
+    </div>
+
+    <!-- PAGES 5 to 10 (Dynamic Aesthetic Layouts) -->
+    <!-- Page 5 -->
+    <div class="page theme-1" data-page="5">
+      <div style="font-family: 'Great Vibes', cursive; font-size: 2.6rem; color: #5a3d28; text-align: center;">Chapter 5: Sweet Memories 💌</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(-3deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=10" alt="Memory">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">Looking back at all our adventures... 🛵</div>
+        <div class="cursive-line">Every single moment with you is my absolute favorite.</div>
+      </div>
+    </div>
+
+    <!-- Page 6 -->
+    <div class="page theme-2" data-page="6">
+      <div style="font-family: 'Sacramento', cursive; font-size: 2.6rem; color: #1b3b5a; text-align: center;">You Glow Girl ✨</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(4deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=11" alt="Glow Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">Keep shining bright and chasing your dreams! 🌟</div>
+        <div class="cursive-line">The world is a much prettier place with you in it.</div>
+      </div>
+    </div>
+
+    <!-- Page 7 -->
+    <div class="page theme-3" data-page="7">
+      <div style="font-family: 'Great Vibes', cursive; font-size: 2.8rem; color: #dcb3ff; text-align: center;">Starry Night Vibes 🌌</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(-2deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=12" alt="Starry Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">Make a wish, make it big, it is your day! 🌙</div>
+        <div class="cursive-line">May all your secret wishes come true tonight.</div>
+      </div>
+    </div>
+
+    <!-- Page 8 -->
+    <div class="page theme-4" data-page="8">
+      <div style="font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: #4a2e5d; text-align: center;">Vintage Romance 📜</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(3deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=13" alt="Vintage Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">Old love letters and timeless memories... 🖋️</div>
+        <div class="cursive-line">Cheers to many more chapters together.</div>
+      </div>
+    </div>
+
+    <!-- Page 9 -->
+    <div class="page theme-1" data-page="9">
+      <div style="font-family: 'Great Vibes', cursive; font-size: 2.6rem; color: #5a3d28; text-align: center;">Bestie Goals 👭</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(-4deg);" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=14" alt="Bestie Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">So lucky to have a friend like you! 🧸</div>
+        <div class="cursive-line">Thank you for always being my safe space.</div>
+      </div>
+    </div>
+
+    <!-- Page 10 -->
+    <div class="page theme-3" data-page="10">
+      <div style="font-family: 'Great Vibes', cursive; font-size: 3rem; color: #ffd700; text-align: center;">The Grand Finale 🎂</div>
+      <div class="photo-slot" style="height: 280px; transform: rotate(0deg); border: 4px solid #ffd700;" onclick="triggerUpload(this)">
+        <img src="https://picsum.photos/400/300?random=15" alt="Finale Photo">
+        <input type="file" accept="image/*" onchange="loadPhoto(event, this)">
+        <div class="upload-hint">📷 Click to Replace Photo</div>
+      </div>
+      <div class="text-box">
+        <div class="cursive-line">Happy Birthday once again! 🥳🎉</div>
+        <div class="cursive-line">Eat lots of cake and enjoy your special day to the fullest! ❤️</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div class="controls">
+    <button class="btn" onclick="prevPage()">◀ Prev</button>
+    <div class="page-num" id="pageIndicator">Page 1 / 10</div>
+    <button class="btn" onclick="nextPage()">Next ▶</button>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    const totalPages = 10;
+
+    function updatePage() {
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(page => {
+        const pageNum = parseInt(page.getAttribute('data-page'));
+        
+        page.classList.remove('active', 'flipped');
+        
+        if (pageNum === currentPage) {
+          page.classList.add('active');
+          animateText(page);
+        } else if (pageNum < currentPage) {
+          page.classList.add('flipped');
+        }
+      });
+
+      document.getElementById('pageIndicator').innerText = `Page ${currentPage} / ${totalPages}`;
+    }
+
+    function animateText(activePage) {
+      const lines = activePage.querySelectorAll('.cursive-line');
+      lines.forEach(line => line.classList.remove('visible'));
+
+      lines.forEach((line, index) => {
+        setTimeout(() => {
+          line.classList.add('visible');
+        }, (index + 1) * 450); // Line-by-line animated typing delay
+      });
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        updatePage();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        updatePage();
+      }
+    }
+
+    function triggerUpload(slot) {
+      const fileInput = slot.querySelector('input[type="file"]');
+      if (fileInput) fileInput.click();
+    }
+
+    function loadPhoto(event, input) {
+      event.stopPropagation();
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = input.parentElement.querySelector('img');
+          if (img) img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Initialize Page 1 Text Animation on Load
+    document.addEventListener("DOMContentLoaded", () => {
+      const firstPage = document.querySelector('.page[data-page="1"]');
+      animateText(firstPage);
+    });
+  </script>
+
+</body>
+</html>
